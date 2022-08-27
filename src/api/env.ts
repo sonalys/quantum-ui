@@ -1,17 +1,19 @@
-const api_url = "http://localhost:9090/api/v2"
+const apiURL = "http://localhost:9090/api/v2"
 
-const get_header = (props): RequestInit => ({
+const getHeader = (props): RequestInit => ({
   mode: "cors",
   credentials: 'include',
   ...props
 });
 
 export const request = async (input : RequestInfo, props ?: any) : Promise<Response> => {
-  return fetch(input, get_header(props))
+  return fetch(input, getHeader(props))
 };
 
-export default {
-  base_url: api_url,
-  app_url: `${api_url}/app`,
-  sync_url: `${api_url}/sync`,
-};
+const env = {
+  baseURL: apiURL,
+  appURL: `${apiURL}/app`,
+  syncURL: `${apiURL}/sync`,
+}
+
+export default env;

@@ -1,6 +1,6 @@
 import env, { request } from './env';
-import type { Torrent } from '@defs/torrent';
-import type { ServerState } from '@defs/transfer_info';
+import type { Torrent } from 'definitions/torrent';
+import type { ServerState } from 'definitions/transfer_info';
 
 export class MainDataSync {
   rid!: number
@@ -17,7 +17,7 @@ export class MainDataSync {
 }
 
 const sync = async (rID : number): Promise<MainDataSync> => {
-  let resp = await request(`${env.sync_url}/maindata?rid=${rID}`);
+  let resp = await request(`${env.syncURL}/maindata?rid=${rID}`);
   if (resp.status >= 400) {
     throw await resp.json();
   }

@@ -1,22 +1,33 @@
-import logo from './logo.svg';
 import './App.css';
-import get_version from 'api/version';
+import getVersion from 'api/version';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import Login from 'routes/login/login';
 import { useEffect } from 'react';
+import { login } from 'store/authentication';
+import { useDispatch, useSelector } from 'react-redux';
+import { StoreType } from 'store';
+import Login from 'routes/login';
+import Home from 'routes/home';
 
-export default () => {
+const App = () => {
+  const logged = useSelector((state : StoreType) => state.auth.logged)
+  const dispatch = useDispatch();
+
   const navigate = useNavigate();
   useEffect(() => {
-    get_version()
-      .then(() => navigate("/home", { replace: true }))
-      .catch(() => navigate("/", { replace: true }));
+    getVersion()
+      .then(() => {
+        dispatch(login);
+        navigate("/", { replace: true });
+  })
+      .catch(() => navigate("/login", { replace: true }));
   }, [])
 
   return <div>
     <Routes>
-      <Route path='/' element={<Login />} />
+      <Route path='/' element={<Home />} />
       <Route path='/login' element={<Login />} />
     </Routes>
   </div>
-};
+}
+
+export default App;

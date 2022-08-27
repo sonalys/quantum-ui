@@ -1,9 +1,9 @@
 import env, { request } from './env';
 
 const version = async () : Promise<string> => {
-  var resp = await request(`${env.app_url}/version`)
-  if (resp.status == 403) {
-    throw "forbidden"
+  var resp = await request(`${env.appURL}/version`)
+  if (resp.status === 403) {
+    throw new Error("access denied");
   }
   return await resp.text()
 }
