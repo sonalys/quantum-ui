@@ -1,6 +1,6 @@
 import env, { request } from './env';
-import type { Torrent } from 'definitions/torrent';
-import type { ServerState } from 'definitions/transfer_info';
+import type { Torrent } from 'types/torrent';
+import type { ServerState } from 'types/transfer_info';
 
 export class MainDataSync {
   rid!: number

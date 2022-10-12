@@ -1,26 +1,17 @@
 import './App.css';
 import getVersion from 'api/version';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { login } from 'store/authentication';
-import { useDispatch, useSelector } from 'react-redux';
-import { StoreType } from 'store';
+import { useMemo } from 'react';
 import Login from 'routes/login';
 import Home from 'routes/home';
 
 const App = () => {
-  const logged = useSelector((state : StoreType) => state.auth.logged)
-  const dispatch = useDispatch();
-
   const navigate = useNavigate();
-  useEffect(() => {
+  useMemo(() => {
     getVersion()
-      .then(() => {
-        dispatch(login);
-        navigate("/", { replace: true });
-  })
+      .then(() => navigate("/", { replace: true }))
       .catch(() => navigate("/login", { replace: true }));
-  }, [])
+  }, [navigate])
 
   return <div>
     <Routes>
