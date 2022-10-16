@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2022",
     "lib": [
       "dom",
       "dom.iterable",
@@ -21,4 +21,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
   },
+  "exclude": [
+    "node_modules"
+  ],
 }

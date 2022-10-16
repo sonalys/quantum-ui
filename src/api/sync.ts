@@ -16,8 +16,10 @@ export class MainDataSync {
   server_state?: ServerState
 }
 
-const sync = async (rID : number): Promise<MainDataSync> => {
-  let resp = await request(`${env.syncURL}/maindata?rid=${rID}`);
+const syncURL= `${env.baseURL}/sync`
+
+export const sync = async (rID : number): Promise<MainDataSync> => {
+  let resp = await request(`${syncURL}/maindata?rid=${rID}`);
   if (resp.status >= 400) {
     throw await resp.json();
   }

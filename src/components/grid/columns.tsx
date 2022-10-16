@@ -1,7 +1,37 @@
+import styled from "styled-components";
 import { ColDef } from "ag-grid-community";
+import { GridTorrentData } from "types/torrent";
+import { Downloading, Paused } from "components/icons";
+
+interface StatusRendererProps {
+  data: GridTorrentData
+}
+
+const SVGContainer = styled.div`
+  align-self: center;
+  fill: white;
+
+  display: flex;
+  place-content: center;
+`;
+
+const StatusRenderer = ({ data }: StatusRendererProps) => {
+  let SVG;
+  switch (data.state) {
+    case "pausedDL":
+      SVG = Paused
+      break;
+    case "downloading":
+    case "metaDL":
+      SVG = Downloading
+      break;
+    default:
+  }
+  return <SVGContainer><SVG /></SVGContainer>
+};
 
 const columns = {
-  "status": { headerName: "Status", field: "status", cellRenderer: () => <div>a</div> },
+  "status": { headerName: "Status", field: "status", cellRenderer: StatusRenderer },
   "name": { headerName: "Name", field: "name" },
   "size": { headerName: "Size", field: "size" },
   "progress": { headerName: "Progress", field: "progress", cellRenderer: ({ value }) => `${value}%` },
@@ -13,7 +43,10 @@ const columns = {
   "category": { headerName: "Category", field: "category" },
   "added_on": { headerName: "Added On", field: "added_on" },
   "availability": { headerName: "Availability", field: "availability" },
+  "hash": { headerName: "Hash", field: "hash", hide: true },
 } as { [Key: string]: ColDef };
+
+export const columnMapping = ({ field, width, sort, sortIndex }) => ({ field, width, sort, sortIndex });
 
 const columnsList: ColDef[] = Object.values(columns);
 

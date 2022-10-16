@@ -1,8 +1,8 @@
 import moment from "moment";
-import { Torrent } from "types/torrent";
+import { GridTorrentData, Torrent } from "types/torrent";
 import { getSize } from "utils/bytes";
 
-export const torrentFieldMapping = (torrent: Torrent) => ({
+export const torrentFieldMapping = (torrent: Torrent) : GridTorrentData => ({
   name: torrent.name,
   state: torrent.state,
   size: getSize(torrent.size),
@@ -15,5 +15,5 @@ export const torrentFieldMapping = (torrent: Torrent) => ({
   category: torrent.category,
   added_on: moment.unix(torrent.added_on).calendar(),
   availability: torrent.availability,
-  hash: torrent.hash,
+  hash: torrent.infohash_v1,
 });

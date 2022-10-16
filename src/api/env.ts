@@ -6,14 +6,13 @@ const getHeader = (props): RequestInit => ({
   ...props
 });
 
-export const request = async (input : RequestInfo, props ?: any) : Promise<Response> => {
+export const request = async (input : RequestInfo, props ?: RequestInit) : Promise<Response> => {
   return fetch(input, getHeader(props))
 };
 
 const env = {
   baseURL: apiURL,
   appURL: `${apiURL}/app`,
-  syncURL: `${apiURL}/sync`,
 }
 
 export default env;

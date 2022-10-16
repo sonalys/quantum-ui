@@ -1,3 +1,23 @@
+export type torrentState = "error" |
+  "missingFiles" |
+  "uploading" |
+  "pausedUP" |
+  "queuedUP" |
+  "stalledUP" |
+  "checkingUP" |
+  "forcedUP" |
+  "allocating" |
+  "downloading" |
+  "metaDL" |
+  "pausedDL" |
+  "queuedDL" |
+  "stalledDL" |
+  "checkingDL" |
+  "forcedDL" |
+  "checkingResumeData" |
+  "moving" |
+  "unknown"
+
 export type Torrent = {
   added_on: number
   amount_left: number
@@ -14,7 +34,7 @@ export type Torrent = {
   eta: number
   f_l_piece_prio: boolean
   force_start: boolean
-  hash: string
+  infohash_v1: string
   last_activity: number
   magnet_uri: string
   max_ratio: number
@@ -34,7 +54,7 @@ export type Torrent = {
   seen_complete: number
   seq_dl: boolean
   size: number
-  state: string
+  state: torrentState
   super_seeding: boolean
   tags: string
   time_active: number
@@ -44,4 +64,20 @@ export type Torrent = {
   uploaded: number
   uploaded_session: number
   upspeed: number
+}
+
+export type GridTorrentData = {
+  added_on: string
+  availability: number
+  category: string
+  dlspeed: string
+  eta: string
+  hash: string
+  name: string
+  num_leechs: number
+  num_seeds: number
+  progress: number
+  size: string
+  state: torrentState
+  upspeed: string
 }
