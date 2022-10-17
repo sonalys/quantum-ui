@@ -29,7 +29,7 @@ const SVGContainer = styled.div`
   display: flex;
   place-content: center;
 
-  height: 20px;
+  height: 15px;
 `;
 
 const StatusRenderer = ({ data }: StatusRendererProps) => {
@@ -59,6 +59,7 @@ const getSize = ({ value }) => getByteSize(value);
 const getSpeed = ({ value }) => getByteSize(value) + "/s";
 const getCategory = ({ value }) => value === "" ? "-" : value;
 const nameParser = ({ value }: { value: string }) => value.replaceAll(/\[.*?\]/g, "").replaceAll(/[_-]/g, " ");
+const getProgress = ({ value} : { value: number}) => (value * 100).toPrecision(4) + "%";
 
 type ColDict = { [Key: string]: ColDef };
 
@@ -70,18 +71,18 @@ export const defaultColDef: ColDef = {
 };
 
 const columnsDesktop = {
-  "status": { headerName: "Status", field: "status", cellRenderer: StatusRenderer, initialWidth: 40, headerClass: "header-center" },
-  "name": { headerName: "Name", field: "name", flex: 2, initialWidth: 400, minWidth: 100, cellRenderer: nameParser },
-  "size": { headerName: "Size", field: "size", initialWidth: 60, cellRenderer: getSize },
-  "progress": { headerName: "Progress", field: "progress", initialWidth: 50, cellRenderer: ({ value }) => `${value * 100}%` },
+  "status": { headerName: "Status", field: "status", cellRenderer: StatusRenderer, initialWidth: 80, headerClass: "center", cellClass: "center" },
+  "name": { headerName: "Name", field: "name", flex: 2, initialWidth: 400, minWidth: 70, cellRenderer: nameParser },
+  "size": { headerName: "Size", field: "size", initialWidth: 110, cellRenderer: getSize },
+  "progress": { headerName: "Progress", field: "progress", initialWidth: 50, cellRenderer: getProgress},
   "num_seeds": { headerName: "Seeds", field: "num_seeds", initialWidth: 30 },
   "num_leechs": { headerName: "Peers", field: "num_leechs", initialWidth: 30 },
-  "dlspeed": { headerName: "↓", field: "dlspeed", initialWidth: 50, cellRenderer: getSpeed },
-  "upspeed": { headerName: "↑", field: "upspeed", initialWidth: 50, cellRenderer: getSpeed },
+  "dlspeed": { headerName: "↓", field: "dlspeed", initialWidth: 80, cellRenderer: getSpeed },
+  "upspeed": { headerName: "↑", field: "upspeed", initialWidth: 80, cellRenderer: getSpeed },
   "eta": { headerName: "ETA", field: "eta", initialWidth: 100, cellRenderer: getETA },
   "category": { headerName: "Category", field: "category", initialWidth: 100, cellRenderer: getCategory },
   "added_on": { headerName: "Added On", field: "added_on", initialWidth: 150, minWidth: 100, cellRenderer: getAddedOn },
-  "availability": { headerName: "Availability", field: "availability", initialWidth: 70 },
+  "availability": { headerName: "Availability", field: "availability", initialWidth: 70, cellRenderer: getProgress },
   "infohash_v1": { headerName: "Hash", field: "infohash_v1", hide: true },
 } as ColDict;
 

@@ -32,8 +32,16 @@ const Container = styled.div`
     --ag-font-family: monospace;
   }
 
-  .header-center .ag-header-cell-label {
+  .ag-root-wrapper {
+    border: none;
+  }
+
+  .center .ag-header-cell-label {
    justify-content: center;
+  }
+
+  .center.ag-cell {
+    justify-content: center;
   }
 
   .ag-header-cell {
@@ -42,7 +50,12 @@ const Container = styled.div`
   }
 
   .ag-cell {
-    padding: 10px !important;
+    @media (max-width: 720px) {
+      font-size: 2.5vw;
+    }
+    padding: 0 5px !important;
+    display: flex;
+    align-items: center;
   }
 `;
 
@@ -59,7 +72,7 @@ const gridOptions: GridOptions = {
 
 const Grid = ({ className }: props) => {
   const gridRef = useRef<AgGridReact>();
-  const tMap = useRef({});
+  const tMap = useRef<{ [key: string]: Torrent }>({});
   const reqID = useRef(0);
   const screenType = useRef(getScreenType(window.innerWidth));
   const [ctxMenuTarget, setContextMenu] = useState<any>();
@@ -90,14 +103,20 @@ const Grid = ({ className }: props) => {
     const { api } = gridRef.current;
     reqID.current = rid;
     if (!torrents_removed && !torrents) return;
-    Object.keys(torrents || {}).forEach(hash => {
+    Object.keys(torrents).forEach(hash => {
       tMap.current[hash] = {
         ...tMap.current[hash],
         ...torrents[hash],
+        infohash_v1: hash,
       }
     });
     torrents_removed?.forEach(hash => tMap.current[hash] = undefined);
-    api.setRowData(updateData());
+    // api.setRowData(updateData());
+    if (rid === 1) {
+      api.setRowData(updateData());
+    } else {
+      api.applyTransaction({ update: updateData() });
+    }
   }, [updateData]);
 
   const onColumnChanged = debounce(({ api, source }: ColumnResizedEvent) => {
@@ -119,7 +138,7 @@ const Grid = ({ className }: props) => {
       .then(data => {
         handleData(data);
         const interval = data.server_state.refresh_interval;
-        console.log(`setting interval to ${interval}ms`);
+        console.info(`setting interval to ${interval}ms`);
         timer = setInterval(() => sync(reqID.current).then(handleData), interval);
       })
       .catch(exception => console.log(exception));
@@ -137,7 +156,7 @@ const Grid = ({ className }: props) => {
       torrent={data}
       setRowData={(data: Partial<Torrent>) => {
         mergeTorrent(data);
-        api.setRowData(updateData());
+        api.applyTransaction({ update: updateData() })
       }}
       hide={() => { setContextMenu(null) }} />;
   }, [ctxMenuTarget, updateData, mergeTorrent]);
@@ -154,6 +173,7 @@ const Grid = ({ className }: props) => {
         onSortChanged: onColumnChanged,
         onCellContextMenu: setContextMenu,
         onGridReady,
+        getRowId: ({ data }) => data.infohash_v1,
       }} />
     {contextMenu()}
   </Container>;

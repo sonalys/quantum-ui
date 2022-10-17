@@ -1,6 +1,4 @@
 import Grid from "components/grid";
-import Navbar from "components/navbar";
-import Sidebar from "components/sidebar";
 import styled from "styled-components";
 import "./style.css";
 
@@ -10,7 +8,7 @@ const Container = styled.div`
   grid-template-areas: "h h" "s c";
   grid-template-rows: auto 1fr;
   grid-template-columns: auto 1fr;
-  @media (hover:none) {
+  @media (hover: none) {
     grid-template-areas: "h h" "s c";
     grid-template-rows: auto 1fr;
     grid-template-columns: 0 1fr;
@@ -30,11 +28,13 @@ const Container = styled.div`
 `;
 
 const Home = () => {
-  return <Container className="home">
-    <Navbar className="navbar"/>
-    <Sidebar className="sidebar"/>
-    <Grid className="content" />
-  </Container>;
+  return (
+    <Container className="home">
+      {/* <Navbar className="navbar"/> */}
+      {/* <Sidebar className="sidebar"/> */}
+      <Grid className="content" />
+    </Container>
+  );
 };
 
 export default Home;
