@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from "styled-components";
-import { Button, Dropdown, DropdownProps, Input, Menu, Modal } from 'semantic-ui-react';
+import { Dropdown, DropdownProps, Menu } from 'semantic-ui-react';
 
 import 'semantic-ui-css/semantic.min.css';
 import { GridTorrentData, Torrent, torrentState } from 'types/torrent';
-import { resumePause } from 'api/torrents';
+import { CategoryModal } from './category_modal';
+import { ResumePauseOption } from './resume_pause';
 
 interface ContainerProps {
   top, left: number
@@ -63,45 +64,22 @@ const HoverDropdown = ({ children, ...props }: DropdownProps) => {
 export const ContextMenu = ({ top, left, torrent, hide, setRowData }: Props) => {
   const containerRef = useRef<HTMLDivElement>();
   const [modalOpen, setModalOpen] = useState(false);
-  const clickHandler = (e: MouseEvent) => !modalOpen && !containerRef.current.contains(e.target as any) && hide();
+  const clickHandler = useCallback(
+    (e: MouseEvent) => !modalOpen && !containerRef.current.contains(e.target as any) && hide(),
+    [hide, modalOpen]);
   useEffect(() => {
-    document.addEventListener("click", clickHandler);
+    document.addEventListener("mousedown", clickHandler);
+    document.addEventListener("touchstart", clickHandler);
     return () => {
-      document.removeEventListener("click", clickHandler);
+      document.removeEventListener("mousedown", clickHandler);
+      document.removeEventListener("touchstart", clickHandler);
     };
-  }, [hide, clickHandler]);
+  }, [hide, modalOpen, clickHandler]);
   const torrentAction = getTorrentAction(torrent);
   return <Container ref={containerRef} top={top} left={left}>
-    <Modal open={modalOpen} dimmer basic size='mini'>
-      <Modal.Header>New Category</Modal.Header>
-      <Modal.Content>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <Input label="Name" fluid labelPosition='left corner' />
-          <Input label="Path" fluid labelPosition='left corner' />
-        </div>
-      </Modal.Content>
-      <Modal.Actions>
-        <Button color='black' onClick={() => setModalOpen(false)}>
-          Cancel
-        </Button>
-        <Button
-          labelPosition='right'
-          icon='checkmark'
-          onClick={() => setModalOpen(false)}
-          color="blue"
-        >Create</Button>
-      </Modal.Actions>
-    </Modal>
+    <CategoryModal modalOpen={modalOpen} setModalOpen={setModalOpen} />
     <Menu secondary vertical>
-      <Menu.Item
-        name={torrentAction.action}
-        onClick={() => {
-          resumePause(torrent.hash, torrentAction.action).then(() => {
-            setRowData({ state: torrentAction.newState, infohash_v1: torrent.hash });
-          });
-          hide();
-        }}
-      />
+      <ResumePauseOption hide={hide} setRowData={setRowData} torrent={torrent} torrentAction={torrentAction} />
       <HoverDropdown item text='Categories' openOnFocus>
         <Dropdown.Menu floated>
           <Dropdown.Item onClick={() => { setModalOpen(true) }}>Anime</Dropdown.Item>

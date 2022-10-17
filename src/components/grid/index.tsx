@@ -7,7 +7,7 @@ import { ColDef, ColumnResizedEvent, GridOptions } from 'ag-grid-community';
 import sync, { MainDataSync } from 'api/sync';
 import styled from "styled-components";
 import { debounce } from 'utils/func';
-import { columnMapping, restoreColumns } from "./columns";
+import { restoreColumns, saveColumns } from "./columns";
 import { torrentFieldMapping } from "./torrent";
 import { ContextMenu } from "./context-menu";
 import { Torrent } from "types/torrent";
@@ -32,16 +32,22 @@ const Container = styled.div`
     --ag-font-family: monospace;
   }
 
+  .ag-header-cell {
+    padding: 0 5px !important;
+  }
+
   .ag-cell {
     padding: 10px !important;
   }
 `;
 
-const defaultColDef = {
+const defaultColDef : ColDef = {
   minWidth: 50,
   resizable: true,
   sortable: true,
   suppressMovable: true,
+  wrapText: true,
+  autoHeight: true,
 };
 
 const gridOptions: GridOptions = {
@@ -55,17 +61,28 @@ const gridOptions: GridOptions = {
   suppressRowDrag: true,
 };
 
-const { cols, isDefault } = restoreColumns();
-
 const Grid = ({ className }: props) => {
   const gridRef = useRef<AgGridReact>();
   const tMap = useRef({});
   const reqID = useRef(0);
   const [ctxMenuTarget, setContextMenu] = useState<any>();
+  const [width, setWidth] = useState(window.innerWidth);
+  const [{ cols, isDefault }, setCols] = useState(restoreColumns(window.innerWidth));
   console.info("grid rendered");
 
-  const updateData = useCallback(() => Object.values(tMap.current).map(torrentFieldMapping), []);
+  useEffect(() => {
+    const colUpdateHandler = debounce((e : UIEvent) => {
+      const target = e.target as Window;
+      setWidth(target.innerWidth);
+      setCols(restoreColumns(target.innerWidth));
+    }, 100);
+    window.addEventListener("resize", colUpdateHandler);
+    return () => {
+      window.removeEventListener("resize", colUpdateHandler);
+    };
+  }, []);
 
+  const updateData = useCallback(() => Object.values(tMap.current).map(torrentFieldMapping), []);
   const mergeTorrent = useCallback((t: Partial<Torrent>) => tMap.current[t.infohash_v1] = {
     ...tMap.current[t.infohash_v1],
     ...t,
@@ -87,8 +104,7 @@ const Grid = ({ className }: props) => {
 
   const onColumnChanged = debounce(({ api, source }: ColumnResizedEvent) => {
     if (source === "flex") return;
-    const def = (api.getColumnDefs() as ColDef[]).map(columnMapping);
-    localStorage.columnsConfig = JSON.stringify(def);
+    saveColumns(width, api.getColumnDefs() as ColDef[]);
     console.info("persisting column changes");
   });
 
@@ -97,7 +113,7 @@ const Grid = ({ className }: props) => {
     if (!isDefault) return
     console.info("auto sizing columns");
     api.sizeColumnsToFit();
-  }, []);
+  }, [isDefault]);
 
   useEffect(() => {
     console.info("initializing grid polling");
@@ -137,7 +153,6 @@ const Grid = ({ className }: props) => {
       columnDefs={cols}
       gridOptions={{
         ...gridOptions,
-        columnDefs: cols,
         onColumnResized: onColumnChanged,
         onSortChanged: onColumnChanged,
         onCellContextMenu: setContextMenu,
