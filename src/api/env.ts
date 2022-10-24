@@ -1,5 +1,5 @@
-// const apiURL = "http://localhost:9090/api/v2"
-const apiURL = "http://192.168.1.223:8088/api/v2"
+const apiURL = "http://localhost:9090/api/v2"
+// const apiURL = "http://192.168.1.223:8088/api/v2"
 
 const getHeader = (props): RequestInit => ({
   mode: "cors",
