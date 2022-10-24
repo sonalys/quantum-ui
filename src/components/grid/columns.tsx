@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { ColDef } from "ag-grid-community";
 import { GridTorrentData } from "types/torrent";
-import { Downloading, Paused } from "components/icons";
+import { Completed, Downloading, Paused } from "components/icons";
 import { resumePause } from "api/torrents";
 import { getByteSize } from "utils/bytes";
 import moment from "moment";
@@ -36,8 +36,11 @@ const StatusRenderer = ({ data }: StatusRendererProps) => {
   let SVG;
   let action;
   switch (data.state) {
-    case "pausedDL":
     case "pausedUP":
+      SVG = Completed;
+      action = "resume"
+      break;
+    case "pausedDL":
       SVG = Paused
       action = "resume"
       break;
@@ -53,13 +56,15 @@ const StatusRenderer = ({ data }: StatusRendererProps) => {
 
 const maxETA = 8640000;
 
-const getETA = ({ value }): string => value === maxETA ? "∞" : moment.duration(value, "seconds").humanize();
-const getAddedOn = ({ value }) => moment.unix(value).calendar();
-const getSize = ({ value }) => getByteSize(value);
-const getSpeed = ({ value }) => getByteSize(value) + "/s";
-const getCategory = ({ value }) => value === "" ? "-" : value;
-const nameParser = ({ value }: { value: string }) => value.replaceAll(/\[.*?\]/g, "").replaceAll(/[_-]/g, " ");
-const getProgress = ({ value} : { value: number}) => (value * 100).toPrecision(4) + "%";
+const etaRenderer = ({ value }): string => value === maxETA ? "∞" : moment.duration(value, "seconds").humanize();
+const addedOnRenderer = ({ value }) => moment.unix(value).calendar();
+const sizeRenderer = ({ value }) => getByteSize(value);
+const speedRenderer = ({ value }) => getByteSize(value) + "/s";
+const categoryRenderer = ({ value }) => value === "" ? "-" : value;
+// TODO: create a better name renderer so we can have encoding / resolution / source tags properly rendered.
+const nameRenderer = ({ value }: { value: string }) => value.replaceAll(/(\[.*?\])|(\.\w{3}$)|((h|x)26(4|5))/ig, "").replaceAll(/[_\-.]/g, " ");
+const progressRenderer = ({ value }: { value: number }) => (value * 100).toPrecision(4) + "%";
+const availabilityRenderer = ({ value }: { value: number }) => value === -1 ? "-" : progressRenderer({value});
 
 type ColDict = { [Key: string]: ColDef };
 
@@ -72,17 +77,17 @@ export const defaultColDef: ColDef = {
 
 const columnsDesktop = {
   "status": { headerName: "Status", field: "status", cellRenderer: StatusRenderer, initialWidth: 80, headerClass: "center", cellClass: "center" },
-  "name": { headerName: "Name", field: "name", flex: 2, initialWidth: 400, minWidth: 70, cellRenderer: nameParser },
-  "size": { headerName: "Size", field: "size", initialWidth: 110, cellRenderer: getSize },
-  "progress": { headerName: "Progress", field: "progress", initialWidth: 50, cellRenderer: getProgress},
+  "name": { headerName: "Name", field: "name", flex: 2, initialWidth: 400, minWidth: 70, cellRenderer: nameRenderer },
+  "size": { headerName: "Size", field: "size", initialWidth: 110, cellRenderer: sizeRenderer },
+  "progress": { headerName: "Progress", field: "progress", initialWidth: 50, cellRenderer: progressRenderer },
   "num_seeds": { headerName: "Seeds", field: "num_seeds", initialWidth: 30 },
   "num_leechs": { headerName: "Peers", field: "num_leechs", initialWidth: 30 },
-  "dlspeed": { headerName: "↓", field: "dlspeed", initialWidth: 80, cellRenderer: getSpeed },
-  "upspeed": { headerName: "↑", field: "upspeed", initialWidth: 80, cellRenderer: getSpeed },
-  "eta": { headerName: "ETA", field: "eta", initialWidth: 100, cellRenderer: getETA },
-  "category": { headerName: "Category", field: "category", initialWidth: 100, cellRenderer: getCategory },
-  "added_on": { headerName: "Added On", field: "added_on", initialWidth: 150, minWidth: 100, cellRenderer: getAddedOn },
-  "availability": { headerName: "Availability", field: "availability", initialWidth: 70, cellRenderer: getProgress },
+  "dlspeed": { headerName: "↓", field: "dlspeed", initialWidth: 80, cellRenderer: speedRenderer },
+  "upspeed": { headerName: "↑", field: "upspeed", initialWidth: 80, cellRenderer: speedRenderer },
+  "eta": { headerName: "ETA", field: "eta", initialWidth: 100, cellRenderer: etaRenderer },
+  "category": { headerName: "Category", field: "category", initialWidth: 100, cellRenderer: categoryRenderer },
+  "added_on": { headerName: "Added On", field: "added_on", initialWidth: 150, minWidth: 100, cellRenderer: addedOnRenderer },
+  "availability": { headerName: "Availability", field: "availability", initialWidth: 70, cellRenderer: availabilityRenderer },
   "infohash_v1": { headerName: "Hash", field: "infohash_v1", hide: true },
 } as ColDict;
 
