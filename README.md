@@ -2,6 +2,18 @@
 
 This project is created with the objective of being a mobile friendly UI for qBittorrent.
 
+It provides an interface with [Ag-grid](www.ag-grid.com), allowing a highly customizable, scalable grid to control
+your torrents from any device.
+
+![image](https://user-images.githubusercontent.com/15274059/221689565-c7600ee7-0faa-400d-b112-291a1b8ba5d9.png)
+
+## Motivations
+
+The motivation of this project is duo to the original qBitTorrent front-end being very outdated and not compatible with
+touch devices. Other front-ends also did not satisfy my quality standards.
+
+This front-end also implements quality of life features over the qBitTorrent api, like better filtering and regex search.
+
 ## Guidelines
 
 Before merging any PR's on this repository, make sure the UI works properly on mobile devices using chrome and firefox. \
