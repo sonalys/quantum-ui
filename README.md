@@ -33,6 +33,8 @@ All components should work with both mouse and touch devices.
 
 ## Run
 
+Configure your qBitTorrent api url inside `./src/api/env.ts:1`
+
 Execute `yarn run start` from terminal.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
