@@ -19,7 +19,6 @@ interface props {
 const Container = styled.div`
   background-color: blue;
   width: 100%;
-
   .ag-theme-alpine-dark {
     --ag-foreground-color: var(--text);
     --ag-background-color: var(--background);
@@ -27,28 +26,22 @@ const Container = styled.div`
     --ag-header-background-color: var(--primary);
     --ag-odd-row-background-color: var(--secondary);
     --ag-header-column-resize-handle-color: var(--text);
-
     --ag-font-size: 17px;
     --ag-font-family: monospace;
   }
-
   .ag-root-wrapper {
     border: none;
   }
-
   .center .ag-header-cell-label {
    justify-content: center;
   }
-
   .center.ag-cell {
     justify-content: center;
   }
-
   .ag-header-cell {
     padding: 0 5px !important;
     user-select: none;
   }
-
   .ag-cell {
     @media (max-width: 720px) {
       font-size: 2.5vw;
@@ -71,15 +64,25 @@ const gridOptions: GridOptions = {
 };
 
 const Grid = ({ className }: props) => {
+  // Reference to ag-grid component.
   const gridRef = useRef<AgGridReact>();
-  const tMap = useRef<{ [key: string]: Torrent }>({});
+  // State to hold qBittorrent api data, stored by torrent hash.
+  const tMap = useRef<{ [hash: string]: Torrent }>({});
+  // Counter used to keep track of qBitTorrent upchanges,
+  // increments every request to the api.
   const reqID = useRef(0);
+  // Define screen type between Desktop or Tablet mode.
   const screenType = useRef(getScreenType(window.innerWidth));
+  // Used for controlling context menu in touch screens.
   const [ctxMenuTarget, setContextMenu] = useState<any>();
+  // Integration with local storage to configure table columns, sizes, sorting, etc.
   const [{ cols, isDefault }, setCols] = useState(restoreColumns(screenType.current));
   console.info("grid rendered");
-
   useEffect(() => {
+    // This useEffect manages screen resizing logic, hooking itself to window "resize" event.
+    // It triggers reconfiguration of the columns based on screen size.
+    // Tablet screen and desktop screen have a different number of columns.
+    // Updates debouncing every 100ms intervals, because resize event is called too often, and would use a lot of cpu.
     const colUpdateHandler = debounce((e: UIEvent) => {
       const target = e.target as Window;
       const newType = getScreenType(target.innerWidth);
@@ -89,16 +92,18 @@ const Grid = ({ className }: props) => {
     }, 100);
     window.addEventListener("resize", colUpdateHandler);
     return () => {
+      // Remove hook when destructing the component.
       window.removeEventListener("resize", colUpdateHandler);
     };
   }, []);
-
   const updateData = useCallback(() => Object.values(tMap.current), []);
   const mergeTorrent = useCallback((t: Partial<Torrent>) => tMap.current[t.infohash_v1] = {
     ...tMap.current[t.infohash_v1],
     ...t,
   }, []);
-
+  // Integration with qBitTorrent api polling.
+  // It fetches data every f, f set by the qBitTorrent api.
+  // It only updates data for ag-grid if any actual torrent changed states.
   const handleData = useCallback(({ torrents, torrents_removed, rid }: MainDataSync) => {
     const { api } = gridRef.current;
     reqID.current = rid;
@@ -118,19 +123,21 @@ const Grid = ({ className }: props) => {
       api.applyTransaction({ update: updateData() });
     }
   }, [updateData]);
-
+  // onColumnChanged integrates with ag-grid api,
+  // persisting events originated from user interaction on columns configuration.
   const onColumnChanged = debounce(({ api, source }: ColumnResizedEvent) => {
+    // Source === flex originates from the page rendering the first time, so we ignore that.
     if (source === "flex") return;
     saveColumns(screenType.current, api.getColumnDefs() as ColDef[]);
   });
-
+  // Initialization handler of ag-grid component, if our columnConfiguration is not set yet, we trigger autoSize.
   const onGridReady = useCallback(() => {
     const { api } = gridRef.current;
     if (!isDefault) return
     console.info("auto sizing columns");
     api.sizeColumnsToFit();
   }, [isDefault]);
-
+  // Polling logic for the qBitTorrent api.
   useEffect(() => {
     console.info("initializing grid polling");
     let timer: string | number | NodeJS.Timeout;
@@ -146,7 +153,7 @@ const Grid = ({ className }: props) => {
       clearInterval(timer);
     };
   }, [handleData]);
-
+  // ContextMenu component renderer, only renders if the state allows it, at the specified position.
   const contextMenu = useCallback(() => {
     if (!ctxMenuTarget) return;
     const { event, data, api } = ctxMenuTarget;

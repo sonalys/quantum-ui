@@ -32,6 +32,7 @@ const SVGContainer = styled.div`
   height: 15px;
 `;
 
+// StatusRenderer is a component renderer for the status cell, receiving state and returning a svg icon for each state.
 const StatusRenderer = ({ data }: StatusRendererProps) => {
   let SVG;
   let action;
@@ -54,7 +55,7 @@ const StatusRenderer = ({ data }: StatusRendererProps) => {
   return <SVGContainer onClick={() => { resumePause(data.hash, action) }}><SVG /></SVGContainer>
 };
 
-const maxETA = 8640000;
+const maxETA = 8640000; // 100 days is the maximum value returned from qBitTorrent api.
 
 const etaRenderer = ({ value }): string => value === maxETA ? "∞" : moment.duration(value, "seconds").humanize();
 const addedOnRenderer = ({ value }) => moment.unix(value).calendar();
@@ -64,7 +65,7 @@ const categoryRenderer = ({ value }) => value === "" ? "-" : value;
 // TODO: create a better name renderer so we can have encoding / resolution / source tags properly rendered.
 const nameRenderer = ({ value }: { value: string }) => value.replaceAll(/(\[.*?\])|(\.\w{3}$)|((h|x)26(4|5))/ig, "").replaceAll(/[_\-.]/g, " ");
 const progressRenderer = ({ value }: { value: number }) => (value * 100).toPrecision(4) + "%";
-const availabilityRenderer = ({ value }: { value: number }) => value === -1 ? "-" : progressRenderer({value});
+const availabilityRenderer = ({ value }: { value: number }) => value === -1 ? "-" : progressRenderer({ value });
 
 type ColDict = { [Key: string]: ColDef };
 
@@ -75,7 +76,7 @@ export const defaultColDef: ColDef = {
   suppressMovable: true,
 };
 
-const columnsDesktop = {
+const defaultColumnsDesktop = {
   "status": { headerName: "Status", field: "status", cellRenderer: StatusRenderer, initialWidth: 80, headerClass: "center", cellClass: "center" },
   "name": { headerName: "Name", field: "name", flex: 2, initialWidth: 400, minWidth: 70, cellRenderer: nameRenderer },
   "size": { headerName: "Size", field: "size", initialWidth: 110, cellRenderer: sizeRenderer },
@@ -91,32 +92,33 @@ const columnsDesktop = {
   "infohash_v1": { headerName: "Hash", field: "infohash_v1", hide: true },
 } as ColDict;
 
-const columnsMobile = {
-  "status": columnsDesktop["status"],
-  "name": columnsDesktop["name"],
-  "dlspeed": columnsDesktop["dlspeed"],
-  "upspeed": columnsDesktop["upspeed"],
-  "size": columnsDesktop["size"],
-  "infohash_v1": columnsDesktop["infohash_v1"],
+const defaultColumnsMobile = {
+  "status": defaultColumnsDesktop["status"],
+  "name": defaultColumnsDesktop["name"],
+  "dlspeed": defaultColumnsDesktop["dlspeed"],
+  "upspeed": defaultColumnsDesktop["upspeed"],
+  "size": defaultColumnsDesktop["size"],
+  "infohash_v1": defaultColumnsDesktop["infohash_v1"],
 } as ColDict;
 
 
-const columnsDesktopList: ColDef[] = Object.values(columnsDesktop);
-const columnsMobileList: ColDef[] = Object.values(columnsMobile);
+const columnsDesktopList: ColDef[] = Object.values(defaultColumnsDesktop);
+const columnsMobileList: ColDef[] = Object.values(defaultColumnsMobile);
 
 export const restoreColumns = (t: screenType): ({ cols: ColDef[], isDefault: boolean }) => {
   let columns: string, defaultCols: ColDict;
   switch (t) {
     case "mobile":
+      // TODO: restore the persistence.
       //columns = localStorage.columnsMobile;
-      defaultCols = columnsMobile;
+      defaultCols = defaultColumnsMobile;
       if (!columns) {
         return { cols: columnsMobileList, isDefault: true }
       }
       break;
     case "desktop":
       columns = localStorage.columnsConfig;
-      defaultCols = columnsDesktop;
+      defaultCols = defaultColumnsDesktop;
       if (!columns) {
         return { cols: columnsDesktopList, isDefault: true }
       }
@@ -127,6 +129,8 @@ export const restoreColumns = (t: screenType): ({ cols: ColDef[], isDefault: boo
   return { cols: def, isDefault: false };
 }
 
+// columnMapping is used to map current ag-grid column configuration to a local configuration,
+// filtering only the fields we want to persist.
 const columnMapping = ({ field, width, sort, sortIndex, flex }) => ({ field, width, sort, sortIndex, flex });
 
 export const saveColumns = (t: screenType, cols: ColDef[]) => {
