@@ -7,5 +7,17 @@ export const resumePause = async (hash: string, action: "resume" | "pause"): Pro
   if (resp.status >= 400) {
     throw await resp.text();
   }
-  return
 }
+
+export const addTorrent = async (urls, category: string): Promise<void> => {
+  const body = new FormData();
+  body.append("urls", urls);
+  body.append("category", category);
+  const resp = await request(`${tURL}/add`, {
+    method: "POST",
+    body,
+  })
+  if (resp.status >= 400) {
+    throw await resp.text();
+  }
+};

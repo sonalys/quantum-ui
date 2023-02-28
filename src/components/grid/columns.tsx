@@ -30,6 +30,7 @@ const SVGContainer = styled.div`
   place-content: center;
 
   height: 15px;
+  width: 15px;
 `;
 
 // StatusRenderer is a component renderer for the status cell, receiving state and returning a svg icon for each state.

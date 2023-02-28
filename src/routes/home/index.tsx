@@ -1,3 +1,4 @@
+import { FAB } from "components/fab";
 import Grid from "components/grid";
 import styled from "styled-components";
 import "./style.css";
@@ -33,6 +34,7 @@ const Home = () => {
       {/* <Navbar className="navbar"/> */}
       {/* <Sidebar className="sidebar"/> */}
       <Grid className="content" />
+      <FAB />
     </Container>
   );
 };
