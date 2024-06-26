@@ -8,8 +8,7 @@ const login = async (username: string, password: string): Promise<void> => {
     }),
     body: `username=${username}&password=${password}`
   });
-  let body: string = await resp.text();
-  if (resp.status >= 400 || body.includes("Fails")) throw new Error("failed to authenticate");
+  if (resp.status >= 400) throw new Error("failed to authenticate");
 }
 
 export default login
