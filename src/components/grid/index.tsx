@@ -96,7 +96,7 @@ const Grid = ({ className }: props) => {
       window.removeEventListener("resize", colUpdateHandler);
     };
   }, []);
-  const updateData = useCallback(() => Object.values(tMap.current), []);
+  const updateData = useCallback(() => Object.values(tMap.current), [tMap.current]);
   const mergeTorrent = useCallback((t: Partial<Torrent>) => tMap.current[t.infohash_v1] = {
     ...tMap.current[t.infohash_v1],
     ...t,
@@ -106,7 +106,6 @@ const Grid = ({ className }: props) => {
   // It only updates data for ag-grid if any actual torrent changed states.
   const handleData = useCallback(({ torrents, torrents_removed, rid }: MainDataSync) => {
     const { api } = gridRef.current;
-    reqID.current = rid;
     if (!torrents_removed && !torrents) return;
     Object.keys(torrents).forEach(hash => {
       tMap.current[hash] = {
@@ -117,11 +116,13 @@ const Grid = ({ className }: props) => {
     });
     torrents_removed?.forEach(hash => tMap.current[hash] = undefined);
     // api.setRowData(updateData());
-    if (rid === 1) {
+    // First fetched data should set row data for ag-grid.
+    if (reqID.current === 0) {
       api.setRowData(updateData());
     } else {
       api.applyTransaction({ update: updateData() });
     }
+    reqID.current = rid;
   }, [updateData]);
   // onColumnChanged integrates with ag-grid api,
   // persisting events originated from user interaction on columns configuration.
