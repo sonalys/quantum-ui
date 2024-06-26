@@ -23,7 +23,7 @@ export const CategoryModal = ({modalOpen, setModalOpen} : Props) => {
         icon='checkmark'
         onClick={() => setModalOpen(false)}
         color="blue"
-      >Create</Button>
+      />
     </Modal.Actions>
   </Modal>;
 }

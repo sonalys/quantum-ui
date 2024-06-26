@@ -96,7 +96,7 @@ const Grid = ({ className }: props) => {
       window.removeEventListener("resize", colUpdateHandler);
     };
   }, []);
-  const updateData = useCallback(() => Object.values(tMap.current), [tMap.current]);
+  const updateData = useCallback(() => Object.values(tMap.current), []);
   const mergeTorrent = useCallback((t: Partial<Torrent>) => tMap.current[t.infohash_v1] = {
     ...tMap.current[t.infohash_v1],
     ...t,

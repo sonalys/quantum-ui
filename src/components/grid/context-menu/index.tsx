@@ -61,8 +61,57 @@ const HoverDropdown = ({ children, ...props }: DropdownProps) => {
   </Dropdown>
 };
 
+type myType = ElementCSSInlineStyle & Element;
+
+function constrainPosition(element: myType, container: myType) : number {
+  if (!element) return;
+  if (!container) return;
+  // Get the dimensions of the container
+  const containerRect = container.getBoundingClientRect();
+  const containerWidth = containerRect.width;
+  const containerHeight = containerRect.height;
+
+  // Get the dimensions of the element
+  const elementRect = element.getBoundingClientRect();
+  const elementWidth = elementRect.width;
+  const elementHeight = elementRect.height;
+
+  // Get current top and left positions
+  let top = parseFloat(window.getComputedStyle(element).top);
+  let left = parseFloat(window.getComputedStyle(element).left);
+
+  var changed = false;
+  // Constrain the top position
+  if (top < 0) {
+    top = 0;
+    changed = true;
+  }
+  if (top + elementHeight > containerHeight) {
+    top = containerHeight - elementHeight;
+    changed = true;
+  }
+
+  // Constrain the left position
+  if (left < 0) {
+    left = 0;
+    changed = true;
+  }
+  if (left + elementWidth > containerWidth) {
+    left = containerWidth - elementWidth;
+    changed = true;
+  }
+
+  if (!changed) return containerWidth - (left + elementWidth);
+  // Apply the constrained positions
+  element.style.position = "absolute";
+  element.style.top = `${top}px`;
+  element.style.left = `${left}px`;
+  return containerWidth - (left + elementWidth)
+}
+
 export const ContextMenu = ({ top, left, torrent, hide, setRowData }: Props) => {
   const containerRef = useRef<HTMLDivElement>();
+  const menuRef = useRef<HTMLDivElement>();
   const [modalOpen, setModalOpen] = useState(false);
   const clickHandler = useCallback(
     (e: MouseEvent) => !modalOpen && !containerRef.current.contains(e.target as any) && hide(),
@@ -76,24 +125,18 @@ export const ContextMenu = ({ top, left, torrent, hide, setRowData }: Props) => 
     };
   }, [hide, modalOpen, clickHandler]);
 
-  const [xPos, setXPos] = useState(left);
-
+  const [dir, setDir] = useState<any>("right");
   useEffect(() => {
-    if (left > window.innerWidth * 0.5) {
-      setXPos(left - containerRef.current?.clientWidth ?? 100);
-    }
-  }, [left, containerRef.current])
+    if (constrainPosition(containerRef.current, document.body) < Math.max(100, menuRef.current?.clientWidth)) setDir("left");
+  }, [left])
 
   const torrentAction = getTorrentAction(torrent);
-  return <Container ref={containerRef} top={top} left={xPos}>
+  return <Container ref={containerRef} top={top} left={left}>
     <CategoryModal modalOpen={modalOpen} setModalOpen={setModalOpen} />
     <Menu secondary vertical>
       <ResumePauseOption hide={hide} setRowData={setRowData} torrent={torrent} torrentAction={torrentAction} />
-      <HoverDropdown item text='Categories' openOnFocus
-        direction={left > window.innerWidth * 0.5 ? 'left' : 'right'}
-        floating
-      >
-        <Dropdown.Menu>
+      <HoverDropdown item text='Categories' openOnFocus>
+        <Dropdown.Menu ref={menuRef} direction={dir}>
           <Dropdown.Item onClick={() => { setModalOpen(true) }}>Anime</Dropdown.Item>
           <Dropdown.Item>Series</Dropdown.Item>
           <Dropdown.Item>Movies</Dropdown.Item>
