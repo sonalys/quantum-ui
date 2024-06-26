@@ -75,13 +75,25 @@ export const ContextMenu = ({ top, left, torrent, hide, setRowData }: Props) => 
       document.removeEventListener("touchstart", clickHandler);
     };
   }, [hide, modalOpen, clickHandler]);
+
+  const [xPos, setXPos] = useState(left);
+
+  useEffect(() => {
+    if (left > window.innerWidth * 0.5) {
+      setXPos(left - containerRef.current?.clientWidth ?? 100);
+    }
+  }, [left, containerRef.current])
+
   const torrentAction = getTorrentAction(torrent);
-  return <Container ref={containerRef} top={top} left={left}>
+  return <Container ref={containerRef} top={top} left={xPos}>
     <CategoryModal modalOpen={modalOpen} setModalOpen={setModalOpen} />
     <Menu secondary vertical>
       <ResumePauseOption hide={hide} setRowData={setRowData} torrent={torrent} torrentAction={torrentAction} />
-      <HoverDropdown item text='Categories' openOnFocus>
-        <Dropdown.Menu floated>
+      <HoverDropdown item text='Categories' openOnFocus
+        direction={left > window.innerWidth * 0.5 ? 'left' : 'right'}
+        floating
+      >
+        <Dropdown.Menu>
           <Dropdown.Item onClick={() => { setModalOpen(true) }}>Anime</Dropdown.Item>
           <Dropdown.Item>Series</Dropdown.Item>
           <Dropdown.Item>Movies</Dropdown.Item>
